@@ -23,6 +23,7 @@
   <div class="topbar-right">
     <button class="icon-btn" onclick="toggleTheme()" id="themeBtn"><i class="bi bi-moon-fill" id="themeIcon"></i></button>
     <button class="btn-primary-custom" onclick="openModal('newKametiModal')"><i class="bi bi-plus-lg me-1"></i>Nayi Kameti</button>
+    <button class="btn-qa-topbar" onclick="openModal('quranAndaziModal')" title="Quran Andazi"><i class="bi bi-shuffle"></i></button>
   </div>
 </div>
 
@@ -80,6 +81,11 @@
   <div class="create-option" onclick="openModal('fineModal')">
     <div class="create-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
     <div class="create-info"><h6>Fine Lagayein</h6><p>Late payment par member ko fine apply karein</p></div>
+    <i class="bi bi-chevron-right" style="color:var(--text3)"></i>
+  </div>
+  <div class="create-option" onclick="openModal('quranAndaziModal')">
+    <div class="create-icon" style="background:rgba(139,92,246,.15);color:#8b5cf6"><i class="bi bi-shuffle"></i></div>
+    <div class="create-info"><h6>Quran Andazi</h6><p>Random draw se is maah ka winner nikaalo</p></div>
     <i class="bi bi-chevron-right" style="color:var(--text3)"></i>
   </div>
 </div>
@@ -170,6 +176,38 @@
     <button class="modal-close" onclick="closeModal('kametiDetailModal')"><i class="bi bi-x-lg"></i></button>
     <div class="modal-title" id="kdTitle">Kameti Detail</div>
     <div id="kdBody"></div>
+  </div>
+</div>
+
+<!-- MODAL: QURAN ANDAZI -->
+<div class="modal-overlay" id="quranAndaziModal" onclick="closeModalOutside(event,'quranAndaziModal')">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModal('quranAndaziModal')"><i class="bi bi-x-lg"></i></button>
+    <div class="modal-title">🎴 Quran Andazi</div>
+    <div class="form-group">
+      <label class="form-label">Committee Select Karein</label>
+      <select class="form-input" id="qaKameti" onchange="populateQaMembers()"></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Draw Mein Shamil Members</label>
+      <div id="qaEligibleInfo" style="font-size:12px;color:var(--text3);margin-top:4px;"></div>
+    </div>
+
+    <!-- Draw Area -->
+    <div class="qa-draw-area" id="qaDrawArea">
+      <div class="qa-cards-wrap" id="qaCardsWrap"></div>
+      <button class="qa-draw-btn" id="qaDrawBtn" onclick="startQuranAndazi()">
+        <i class="bi bi-shuffle me-2"></i>Draw Karein
+      </button>
+    </div>
+
+    <!-- Result -->
+    <div class="qa-result" id="qaResult" style="display:none"></div>
+
+    <div style="font-size:10px;color:var(--text3);text-align:center;margin-top:12px;">
+      <i class="bi bi-info-circle me-1"></i>Sirf eligible members (jo pehle winner nahi ban chuke) draw mein shamil honge
+    </div>
   </div>
 </div>
 

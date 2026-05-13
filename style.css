@@ -179,6 +179,52 @@ select.form-input option{background:var(--card);}
 .btn-danger-ghost{flex:1;padding:9px;border-radius:var(--radius-sm);font-size:11px;font-weight:600;cursor:pointer;border:1px solid rgba(239,68,68,.3);background:var(--danger-light);color:var(--danger);transition:all var(--transition);text-align:center;}
 .btn-danger-ghost:hover{border-color:var(--danger);background:rgba(239,68,68,.2);}
 
+
 ::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px;}
+
+/* PAYMENT GROUPS */
+.pay-group{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;}
+.pay-group-header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card2);border-bottom:1px solid var(--border);}
+.pay-group-left{display:flex;align-items:center;gap:10px;}
+.pay-group-dot{width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-d));flex-shrink:0;box-shadow:0 0 8px rgba(16,185,129,.4);}
+.pay-group-name{font-size:13px;font-weight:600;color:var(--text);}
+.pay-group-meta{font-size:10px;color:var(--text3);margin-top:1px;}
+.pay-group-total{font-size:13px;font-weight:700;color:var(--accent);}
+.pay-group-items .payment-item{border-radius:0;border:none;border-bottom:1px solid var(--border);margin:0;}
+.pay-group-items .payment-item:last-child{border-bottom:none;}
+
+/* ═══════════════════════════════════ */
+/* QURAN ANDAZI                        */
+/* ═══════════════════════════════════ */
+.btn-qa-topbar{width:34px;height:34px;border:1px solid rgba(139,92,246,.4);border-radius:9px;background:rgba(139,92,246,.12);display:flex;align-items:center;justify-content:center;cursor:pointer;color:#8b5cf6;font-size:15px;transition:all var(--transition);}
+.btn-qa-topbar:hover{background:rgba(139,92,246,.25);border-color:#8b5cf6;}
+
+.qa-draw-area{background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:14px;text-align:center;}
+
+.qa-cards-wrap{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;min-height:48px;margin-bottom:16px;}
+
+.qa-card{width:44px;height:60px;border-radius:8px;background:linear-gradient(135deg,#8b5cf6,#4c1d95);border:2px solid rgba(139,92,246,.4);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:#fff;cursor:default;transition:all .3s ease;box-shadow:0 3px 10px rgba(139,92,246,.3);position:relative;overflow:hidden;}
+.qa-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.1),transparent);}
+.qa-card.spinning{animation:cardSpin .15s ease infinite alternate;}
+.qa-card.winner{animation:winnerPop .5s cubic-bezier(.34,1.56,.64,1) both;background:linear-gradient(135deg,#f59e0b,#92400e);border-color:#f59e0b;box-shadow:0 0 20px rgba(245,158,11,.5);width:70px;height:96px;font-size:14px;}
+@keyframes cardSpin{from{transform:rotate(-3deg) scale(1.02)}to{transform:rotate(3deg) scale(.98)}}
+@keyframes winnerPop{0%{transform:scale(0.5) rotate(-10deg);opacity:0}60%{transform:scale(1.1) rotate(3deg)}100%{transform:scale(1) rotate(0deg);opacity:1}}
+
+.qa-draw-btn{width:100%;background:linear-gradient(135deg,#8b5cf6,#4c1d95);color:#fff;border:none;border-radius:var(--radius-sm);padding:12px;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 0 18px rgba(139,92,246,.3);transition:all var(--transition);}
+.qa-draw-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 0 26px rgba(139,92,246,.45);}
+.qa-draw-btn:disabled{opacity:.5;cursor:not-allowed;}
+
+.qa-result{background:linear-gradient(135deg,rgba(245,158,11,.12),rgba(139,92,246,.1));border:1px solid rgba(245,158,11,.3);border-radius:16px;padding:20px;text-align:center;animation:fadeUp .4s ease;}
+.qa-result-crown{font-size:36px;margin-bottom:8px;display:block;}
+.qa-result-label{font-size:11px;color:var(--text3);letter-spacing:.6px;text-transform:uppercase;margin-bottom:6px;}
+.qa-result-name{font-family:var(--header-font);font-size:22px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.qa-result-sub{font-size:12px;color:var(--text3);}
+.qa-result-turn{display:inline-block;background:rgba(245,158,11,.15);color:var(--warn);border:1px solid rgba(245,158,11,.3);border-radius:20px;padding:3px 12px;font-size:11px;font-weight:600;margin-top:8px;}
+.qa-history{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
+.qa-history-item{display:flex;justify-content:space-between;padding:5px 0;font-size:11px;color:var(--text2);}
+.qa-history-item span:last-child{color:var(--warn);font-weight:600;}
+
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px;}

@@ -210,26 +210,59 @@ function renderPayments() {
     return;
   }
 
-  document.getElementById('paymentList').innerHTML = [...filtered].reverse().map(p => {
-    const m = getMember(p.memberId);
-    const c = getCommittee(p.committeeId);
-    const iconClass = p.type === 'paid' ? 'green' : p.type === 'late' ? 'red' : 'orange';
-    const icon = p.type === 'paid' ? 'bi-check-circle-fill' : p.type === 'late' ? 'bi-x-circle-fill' : 'bi-hourglass-split';
-    const iconColor = p.type === 'paid' ? 'var(--accent)' : p.type === 'late' ? 'var(--danger)' : 'var(--warn)';
-    const amtColor = p.type === 'paid' ? 'c-green' : p.type === 'late' ? '' : '';
-    const amtStyle = p.type === 'late' ? 'style="color:var(--danger)"' : p.type === 'pending' ? 'style="color:var(--warn)"' : '';
-    const prefix = p.type === 'paid' ? '+' : '';
-    const dateStr = p.type === 'pending' ? `Due: ${p.date}` : p.date;
-    const noteStr = p.notes ? ` · ${p.notes}` : '';
-    return `<div class="payment-item">
-      <div class="pay-icon ${iconClass}"><i class="bi ${icon}" style="color:${iconColor}"></i></div>
-      <div class="pay-info">
-        <div class="pay-name">${m?.name || '—'}</div>
-        <div class="pay-date">${dateStr} · ${c?.name || '—'}${noteStr}</div>
+  // Group payments by committeeId
+  const grouped = {};
+  [...filtered].reverse().forEach(p => {
+    const cId = p.committeeId || 0;
+    if (!grouped[cId]) grouped[cId] = [];
+    grouped[cId].push(p);
+  });
+
+  let html = '';
+  Object.keys(grouped).forEach(cId => {
+    const c = getCommittee(parseInt(cId));
+    const groupPayments = grouped[cId];
+    const groupTotal = groupPayments.filter(p => p.type === 'paid').reduce((s, p) => s + p.amount, 0);
+    const paidCount = groupPayments.filter(p => p.type === 'paid').length;
+
+    // Committee header
+    html += `<div class="pay-group">
+      <div class="pay-group-header">
+        <div class="pay-group-left">
+          <div class="pay-group-dot"></div>
+          <div>
+            <div class="pay-group-name">${c?.name || 'Unknown Committee'}</div>
+            <div class="pay-group-meta">${groupPayments.length} entries · ${paidCount} paid</div>
+          </div>
+        </div>
+        <div class="pay-group-total">${formatRs(groupTotal)}</div>
       </div>
-      <div class="pay-amt ${amtColor}" ${amtStyle}>${prefix}${formatRs(p.amount)}</div>
-    </div>`;
-  }).join('');
+      <div class="pay-group-items">`;
+
+    groupPayments.forEach(p => {
+      const m = getMember(p.memberId);
+      const iconClass = p.type === 'paid' ? 'green' : p.type === 'late' ? 'red' : 'orange';
+      const icon = p.type === 'paid' ? 'bi-check-circle-fill' : p.type === 'late' ? 'bi-x-circle-fill' : 'bi-hourglass-split';
+      const iconColor = p.type === 'paid' ? 'var(--accent)' : p.type === 'late' ? 'var(--danger)' : 'var(--warn)';
+      const amtColor = p.type === 'paid' ? 'c-green' : '';
+      const amtStyle = p.type === 'late' ? 'style="color:var(--danger)"' : p.type === 'pending' ? 'style="color:var(--warn)"' : '';
+      const prefix = p.type === 'paid' ? '+' : '';
+      const dateStr = p.type === 'pending' ? `Due: ${p.date}` : p.date;
+      const noteStr = p.notes ? ` · ${p.notes}` : '';
+      html += `<div class="payment-item">
+        <div class="pay-icon ${iconClass}"><i class="bi ${icon}" style="color:${iconColor}"></i></div>
+        <div class="pay-info">
+          <div class="pay-name">${m?.name || '—'}</div>
+          <div class="pay-date">${dateStr}${noteStr}</div>
+        </div>
+        <div class="pay-amt ${amtColor}" ${amtStyle}>${prefix}${formatRs(p.amount)}</div>
+      </div>`;
+    });
+
+    html += `</div></div>`;
+  });
+
+  document.getElementById('paymentList').innerHTML = html;
 }
 
 function setPayFilter(f, el) {
@@ -298,7 +331,7 @@ function sendReminder(memberId) {
     return;
   }
 
-  const message = `Assalam-o-Alaikum ${m.name}, apka kameti payment pending hai. Please jaldi update karein.`;
+  const message = `Assalam-o-Alaikum ${m.name}, apki kameti payment pending hai. Please jaldi update karein.`;
 
   const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 
@@ -526,12 +559,13 @@ function applyFine() {
 function populateKametiDropdowns() {
   const opts = state.committees.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
   const noOpts = '<option value="">Pehle committee banayein</option>';
-  ['nmKameti', 'payKameti', 'fineKameti'].forEach(id => {
+  ['nmKameti', 'payKameti', 'fineKameti', 'qaKameti'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.innerHTML = state.committees.length ? opts : noOpts;
   });
   populatePayMembers();
   populateFineMembers();
+  populateQaMembers();
 }
 
 // ═══════════════════════════════════════
@@ -540,7 +574,7 @@ function populateKametiDropdowns() {
 function openModal(id) {
   document.getElementById(id).classList.add('open');
   document.body.style.overflow = 'hidden';
-  if (id === 'addMemberModal' || id === 'recordPaymentModal' || id === 'fineModal') populateKametiDropdowns();
+  if (id === 'addMemberModal' || id === 'recordPaymentModal' || id === 'fineModal' || id === 'quranAndaziModal') populateKametiDropdowns();
 }
 function closeModal(id) {
   document.getElementById(id).classList.remove('open');
@@ -562,6 +596,118 @@ function showToast(msg, type) {
   t.innerHTML = `<i class="bi ${icon}"></i> ${msg}`;
   c.appendChild(t);
   setTimeout(() => { t.style.opacity='0'; t.style.transform='translateY(-6px)'; t.style.transition='.3s ease'; setTimeout(()=>t.remove(),300); }, 2800);
+}
+
+// ═══════════════════════════════════════
+// QURAN ANDAZI
+// ═══════════════════════════════════════
+function populateQaMembers() {
+  const cId = parseInt(document.getElementById('qaKameti').value);
+  if (!cId) return;
+  const c = getCommittee(cId);
+  const members = state.members.filter(m => m.committeeId === cId);
+  // eligible = members jinka turn abhi nahi aaya (winnersHistory mein nahi)
+  if (!c.winnersHistory) c.winnersHistory = [];
+  const wonIds = c.winnersHistory.map(w => w.memberId);
+  const eligible = members.filter(m => !wonIds.includes(m.id));
+
+  const infoEl = document.getElementById('qaEligibleInfo');
+  infoEl.innerHTML = `<span style="color:var(--accent);font-weight:600">${eligible.length}</span> eligible members · <span style="color:var(--text3)">${wonIds.length} pehle se winner ban chuke hain</span>`;
+
+  // render cards
+  const wrap = document.getElementById('qaCardsWrap');
+  wrap.innerHTML = eligible.length === 0
+    ? `<div style="color:var(--text3);font-size:12px;padding:10px">Tamam members is kameti mein draw ho chuke hain. Committee reset karein.</div>`
+    : eligible.map(m => `
+        <div class="qa-card" id="qacard-${m.id}" title="${m.name}">
+          ${initials(m.name)}
+        </div>`).join('');
+
+  document.getElementById('qaResult').style.display = 'none';
+  const btn = document.getElementById('qaDrawBtn');
+  btn.disabled = eligible.length === 0;
+  btn.textContent = eligible.length === 0 ? 'Koi eligible member nahi' : '';
+  if (eligible.length > 0) btn.innerHTML = '<i class="bi bi-shuffle me-2"></i>Draw Karein';
+}
+
+function startQuranAndazi() {
+  const cId = parseInt(document.getElementById('qaKameti').value);
+  if (!cId) { showToast('Committee select karein!', 'warn'); return; }
+
+  const c = getCommittee(cId);
+  if (!c.winnersHistory) c.winnersHistory = [];
+  const wonIds = c.winnersHistory.map(w => w.memberId);
+  const members = state.members.filter(m => m.committeeId === cId);
+  const eligible = members.filter(m => !wonIds.includes(m.id));
+
+  if (eligible.length === 0) { showToast('Koi eligible member nahi!', 'warn'); return; }
+
+  const btn = document.getElementById('qaDrawBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Draw ho raha hai...';
+
+  // spinning animation
+  const cards = document.querySelectorAll('.qa-card');
+  cards.forEach(card => card.classList.add('spinning'));
+
+  let count = 0;
+  const totalFlips = 20 + Math.floor(Math.random() * 15);
+  let currentHighlight = -1;
+
+  const interval = setInterval(() => {
+    // unhighlight previous
+    if (currentHighlight >= 0 && eligible[currentHighlight]) {
+      const prev = document.getElementById('qacard-' + eligible[currentHighlight].id);
+      if (prev) prev.style.transform = '';
+    }
+    // highlight random
+    const rnd = Math.floor(Math.random() * eligible.length);
+    currentHighlight = rnd;
+    const el = document.getElementById('qacard-' + eligible[rnd].id);
+    if (el) el.style.transform = 'scale(1.15)';
+    count++;
+
+    if (count >= totalFlips) {
+      clearInterval(interval);
+      // stop on random winner
+      const winnerIdx = Math.floor(Math.random() * eligible.length);
+      const winner = eligible[winnerIdx];
+
+      cards.forEach(card => { card.classList.remove('spinning'); card.style.transform = ''; });
+
+      setTimeout(() => {
+        // mark winner card
+        const winEl = document.getElementById('qacard-' + winner.id);
+        if (winEl) winEl.classList.add('winner');
+
+        // save to history
+        c.winnersHistory.push({ memberId: winner.id, name: winner.name, date: today(), turn: c.winnersHistory.length + 1 });
+        saveState();
+
+        // show result
+        const resultEl = document.getElementById('qaResult');
+        resultEl.style.display = 'block';
+        resultEl.innerHTML = `
+          <span class="qa-result-crown">🏆</span>
+          <div class="qa-result-label">Is Maah Ka Winner</div>
+          <div class="qa-result-name">${winner.name}</div>
+          <div class="qa-result-sub">${c.name} · Member #${winner.turn}</div>
+          <div class="qa-result-turn">Draw #${c.winnersHistory.length}</div>
+          ${c.winnersHistory.length > 1 ? `
+          <div class="qa-history">
+            <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Pichle Winners</div>
+            ${[...c.winnersHistory].reverse().slice(1).map(w =>
+              `<div class="qa-history-item"><span>${w.name}</span><span>Draw #${w.turn} · ${w.date}</span></div>`
+            ).join('')}
+          </div>` : ''}`;
+
+        showToast(`🎉 ${winner.name} is maah ka winner! Mubarak!`, '');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-arrow-repeat me-2"></i>Dubara Draw Karein';
+        populateQaMembers();
+      }, 300);
+    }
+  }, 80);
 }
 
 // ═══════════════════════════════════════
